@@ -279,7 +279,7 @@ const Index = () => {
               <img
                 src="/assets/img10.jpeg"
                 alt="ABO MORSY STORE Logo"
-                className="w-full h-full object-contain filter drop-shadow-2xl relative z-10"
+                className="w-full h-full object-contain filter drop-shadow-2xl relative z-10 rounded-2xl"
                 loading="lazy"
               />
             </div>
@@ -688,16 +688,23 @@ const Index = () => {
               >
                 <path d="/assets/img10.jpeg" />
               </svg> */}
-              <img
-                src="/assets/img10.jpeg"
-                alt=""
-                className="w-4 h-4 sm:w-5 sm:h-5 ml-2"
-              />
               تيليغرام
             </button>
           </div>
-          <p className="text-gray-500 text-xs sm:text-sm">
-            © {new Date().getFullYear()} ABO MORSY STORE. جميع الحقوق محفوظة.
+          <p className="text-center text-xs sm:text-sm text-gray-400 bg-gradient-to-r from-gray-800 via-gray-900 to-black py-4 rounded-xl shadow-md mt-10 border border-gray-700">
+            © {new Date().getFullYear()}{" "}
+            <span className="text-orange-400 font-bold">ABO MORSY STORE</span>.
+            جميع الحقوق محفوظة.
+            <br className="sm:hidden" />
+            تم البرمجة والتطوير بواسطة
+            <span className="text-green-400 font-semibold mx-1">Habashi</span>
+            <span className="text-gray-500">|</span>
+            <a
+              href="tel:01091375804"
+              className="text-blue-400 hover:text-blue-300 hover:underline ml-1"
+            >
+              📞 01091375804
+            </a>
           </p>
         </div>
       </footer>
