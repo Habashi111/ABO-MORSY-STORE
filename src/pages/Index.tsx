@@ -698,12 +698,13 @@ const Index = () => {
             <br className="sm:hidden" />
             تم البرمجة والتطوير بواسطة
             <span className="text-green-400 font-semibold mx-1">Habashi</span>
-            <span className="text-gray-500">|</span>
             <a
-              href="tel:01091375804"
-              className="text-blue-400 hover:text-blue-300 hover:underline ml-1"
+              href="https://wa.me/201091375804?text=هل%20أستطيع%20الاستفسار%20عن%20المواقع%20الإلكترونية؟"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-green-400 hover:text-green-300 hover:underline ml-1"
             >
-              📞 01091375804
+              💬 واتساب: 01091375804
             </a>
           </p>
         </div>
