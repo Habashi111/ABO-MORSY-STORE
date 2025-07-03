@@ -336,7 +336,7 @@ const Index = () => {
         </div>
       </section>
       {/* bay USDT */}
-      /* full code remains the same before the added section */
+
       {/* bay USDT */}
       <section
         id="usdt-trade"
@@ -386,7 +386,7 @@ const Index = () => {
         </div>
       </section>
       {/* coin  */}
-      /* full code remains the same before the added section */
+
       {/* طرق الاستلام */}
       <section
         id="usdt-trade"
