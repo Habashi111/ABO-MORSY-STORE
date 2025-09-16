@@ -46,6 +46,7 @@ const App = () => {
   // Static USD prices as requested
   const buyRate = 50;
   const sellRate = 48;
+  const referralRateInEGP = 50;
   const [transactionType, setTransactionType] = useState("buy");
 
   // Verification services
@@ -59,9 +60,9 @@ const App = () => {
     { name: "Bitget", price: 4, icon: "🔷" },
   ];
   const socialVerificationServices = [
-    { name: "Facebook", price: 3500, icon: "🔵" },
-    { name: "Instagram", price: 3500, icon: "🟣" },
-    { name: "WhatsApp Business", price: 4500, icon: "🟢" },
+    { name: "Facebook", price: 350, icon: "🔵" },
+    { name: "Instagram", price: 350, icon: "🟣" },
+    { name: "WhatsApp Business", price: 450, icon: "🟢" },
   ];
   const [selectedVerificationService, setSelectedVerificationService] = useState(null);
 
@@ -69,7 +70,42 @@ const App = () => {
   const mobileNetworks = ["Vodafone", "Orange", "Etisalat", "WE"];
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
+  
+  // Data Extraction
+  const dataExtractionServices = [
+    { name: "فودافون", price: 250 },
+    { name: "اتصالات", price: 250 },
+    { name: "أورنج", price: 240 },
+    { name: "وي", price: 210 },
+  ];
+  const [selectedDataExtractionService, setSelectedDataExtractionService] = useState(null);
+  const [dataExtractionQuantity, setDataExtractionQuantity] = useState("");
+  
+  // WE Internet
+  const weInternetPackages = [
+    { size: "140 جيجا", price: 263 },
+    { size: "200 جيجا", price: 361 },
+    { size: "250 جيجا", price: 447 },
+    { size: "400 جيجا", price: 700 },
+    { size: "600 جيجا", price: 1042 },
+    { size: "1 تيرا", price: 1664 },
+  ];
+  const [weLandlineNumber, setWeLandlineNumber] = useState("");
+  const [selectedWePackage, setSelectedWePackage] = useState(null);
 
+  // Referrals
+  const [referralCount, setReferralCount] = useState("");
+  const referralRatePerDollar = 8;
+
+  // Telegram Interactions
+  const telegramMemberPrices = {
+    arabic: 0.1932848,
+    foreign: 0.0726982,
+  };
+  const [selectedTelegramType, setSelectedTelegramType] = useState("");
+  const [telegramGroupLink, setTelegramGroupLink] = useState("");
+  const [telegramMemberCount, setTelegramMemberCount] = useState("");
+  
   // Payment methods
   const paymentMethods = [
     { name: "BitMart", id: "14323327", icon: "🟢" },
@@ -88,9 +124,21 @@ const App = () => {
   // Back to top button visibility
   const [showBackToTop, setShowBackToTop] = useState(false);
 
-  // Calculate EGP price based on dollar amount and transaction type
+  // Calculate prices
   const calculatedEgpPrice = dollarAmount 
     ? (transactionType === "buy" ? buyRate : sellRate) * Number(dollarAmount) 
+    : 0;
+
+  const calculatedReferralPrice = referralCount
+    ? (Number(referralCount) / referralRatePerDollar) * referralRateInEGP
+    : 0;
+
+  const calculatedTelegramPrice = telegramMemberCount && selectedTelegramType
+    ? telegramMemberPrices[selectedTelegramType] * Number(telegramMemberCount)
+    : 0;
+
+  const calculatedDataExtractionPrice = dataExtractionQuantity && selectedDataExtractionService
+    ? selectedDataExtractionService.price * Number(dataExtractionQuantity)
     : 0;
 
   // Handle various form submissions to Telegram
@@ -113,6 +161,10 @@ const App = () => {
   };
 
   const handleSendMobileRecharge = () => {
+    if (!selectedNetwork || !mobileNumber) {
+      toast.error("يرجى اختيار الشبكة وإدخال رقم الموبايل.");
+      return;
+    }
     const message = `طلب شحن رصيد:\nالشبكة: ${selectedNetwork}\nرقم الموبايل: ${mobileNumber}`;
     sendToTelegram(message);
     setSelectedNetwork("");
@@ -128,6 +180,61 @@ const App = () => {
     sendToTelegram(message);
     setSelectedVerificationService(null);
   };
+  
+  const handleSendDataExtraction = () => {
+    if (!selectedDataExtractionService || !dataExtractionQuantity) {
+      toast.error("يرجى اختيار الخدمة وإدخال الكمية أولاً.");
+      return;
+    }
+    const message = `طلب خدمة سحب بيانات:\nالخدمة: ${selectedDataExtractionService.name}\nالكمية: ${dataExtractionQuantity}\nالسعر الكلي: ${calculatedDataExtractionPrice.toFixed(2)} ج.م`;
+    sendToTelegram(message);
+    setSelectedDataExtractionService(null);
+    setDataExtractionQuantity("");
+  };
+
+  const handleSendWeInternetPackage = () => {
+    if (!selectedWePackage || !weLandlineNumber) {
+      toast.error("يرجى اختيار الباقة وإدخال الرقم الأرضي.");
+      return;
+    }
+    const message = `طلب باقة انترنت أرضي:\nالباقة: ${selectedWePackage.size}\nالرقم الأرضي: ${weLandlineNumber}\nالسعر: ${selectedWePackage.price} ج.م`;
+    sendToTelegram(message);
+    setSelectedWePackage(null);
+    setWeLandlineNumber("");
+  };
+
+  const handleSendWeInternetBillInquiry = () => {
+    if (!weLandlineNumber) {
+      toast.error("يرجى إدخال الرقم الأرضي للاستعلام عن الفاتورة.");
+      return;
+    }
+    const message = `طلب استعلام عن فاتورة انترنت أرضي:\nالرقم الأرضي: ${weLandlineNumber}`;
+    sendToTelegram(message);
+    setWeLandlineNumber("");
+  };
+
+  const handleSendReferralsRequest = () => {
+    if (!referralCount) {
+      toast.error("يرجى إدخال عدد الإحالات.");
+      return;
+    }
+    const message = `طلب تزويد إحالات:\nالكمية: ${referralCount} إحالة\nالسعر بالدولار: ${(Number(referralCount) / referralRatePerDollar).toFixed(2)}$\nالسعر بالجنيه: ${calculatedReferralPrice.toFixed(2)} ج.م`;
+    sendToTelegram(message);
+    setReferralCount("");
+  };
+
+  const handleSendTelegramInteraction = () => {
+    if (!selectedTelegramType || !telegramMemberCount || !telegramGroupLink) {
+      toast.error("يرجى إدخال جميع البيانات المطلوبة.");
+      return;
+    }
+    const message = `طلب تزويد أعضاء تيليجرام:\nالنوع: ${selectedTelegramType === 'arabic' ? 'عرب' : 'أجانب'}\nرابط الجروب: ${telegramGroupLink}\nالكمية: ${telegramMemberCount} عضو\nالسعر الكلي: ${calculatedTelegramPrice.toFixed(2)} ج.م`;
+    sendToTelegram(message);
+    setSelectedTelegramType("");
+    setTelegramGroupLink("");
+    setTelegramMemberCount("");
+  };
+
 
   const handleCopyAddress = (id) => {
     navigator.clipboard.writeText(id);
@@ -243,7 +350,7 @@ const App = () => {
           </p>
         </header>
 
-        {/* --- Services Section --- */}
+        {/* --- Services Section: First row --- */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           {/* Service Card: USDT Buy & Sell */}
           <Card className="service-card bg-purple-50 border-2 border-purple-200 rounded-xl shadow-lg hover:shadow-2xl">
@@ -259,20 +366,21 @@ const App = () => {
               </p>
               <RadioGroup value={transactionType} onValueChange={setTransactionType} className="flex justify-center mb-4">
                 <div className="flex bg-gray-100 p-1 rounded-full border border-purple-300">
-                  <RadioGroupItem value="buy" id="buy-radio" className="peer sr-only" />
                   <Label
                     htmlFor="buy-radio"
-                    className="cursor-pointer px-4 py-2 rounded-full text-sm font-medium transition-colors peer-data-[state=checked]:bg-green-600 peer-data-[state=checked]:text-white"
+                    className={`cursor-pointer px-4 py-2 rounded-full text-sm font-medium transition-colors ${transactionType === 'buy' ? 'bg-green-600 text-white' : ''}`}
                   >
                     شراء
                   </Label>
-                  <RadioGroupItem value="sell" id="sell-radio" className="peer sr-only" />
+                  <RadioGroupItem value="buy" id="buy-radio" className="peer sr-only" />
+                  
                   <Label
                     htmlFor="sell-radio"
-                    className="cursor-pointer px-4 py-2 rounded-full text-sm font-medium transition-colors peer-data-[state=checked]:bg-red-600 peer-data-[state=checked]:text-white"
+                    className={`cursor-pointer px-4 py-2 rounded-full text-sm font-medium transition-colors ${transactionType === 'sell' ? 'bg-red-600 text-white' : ''}`}
                   >
                     بيع
                   </Label>
+                  <RadioGroupItem value="sell" id="sell-radio" className="peer sr-only" />
                 </div>
               </RadioGroup>
               <Input
@@ -334,6 +442,208 @@ const App = () => {
                 className="w-full btn-gradient text-white rounded-xl"
               >
                 إرسال طلب الشحن
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* --- New Services Section: Data Extraction and WE Internet --- */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          {/* Service Card: Data Extraction */}
+          <Card className="service-card bg-purple-50 border-2 border-purple-200 rounded-xl shadow-lg hover:shadow-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 rounded-full bg-purple-200 flex items-center justify-center">
+                  <User className="w-8 h-8 text-purple-600" />
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-center text-purple-700 mb-4">خدمة سحب البيانات</h3>
+              <p className="text-gray-600 text-center mb-4">
+                اختر الشبكة وحدد الكمية لحساب السعر الإجمالي.
+              </p>
+              <Select onValueChange={(val) => setSelectedDataExtractionService(dataExtractionServices.find(s => s.name === val))} value={selectedDataExtractionService?.name}>
+                <SelectTrigger className="bg-gray-100 border-purple-300 text-gray-900 rounded-xl mb-4">
+                  <SelectValue placeholder="اختر الشبكة" />
+                </SelectTrigger>
+                <SelectContent className="bg-white text-gray-900 border-purple-300 rounded-xl">
+                  {dataExtractionServices.map(service => (
+                    <SelectItem key={service.name} value={service.name}>
+                      {service.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                type="number"
+                min="0"
+                placeholder="أدخل الكمية"
+                value={dataExtractionQuantity}
+                onChange={(e) => setDataExtractionQuantity(e.target.value)}
+                className="bg-gray-100 border-purple-300 text-gray-900 rounded-xl mb-4"
+              />
+              <div className="flex justify-between items-center text-lg font-semibold text-purple-700 mb-4">
+                <span>السعر الإجمالي:</span>
+                <span className="text-gradient font-extrabold">{calculatedDataExtractionPrice.toFixed(2)} ج.م</span>
+              </div>
+              <Button
+                onClick={handleSendDataExtraction}
+                disabled={!selectedDataExtractionService || !dataExtractionQuantity}
+                className="w-full btn-gradient text-white rounded-xl"
+              >
+                إرسال طلب سحب البيانات
+              </Button>
+            </CardContent>
+          </Card>
+          
+          {/* Service Card: WE Internet */}
+          <Card className="service-card bg-purple-50 border-2 border-purple-200 rounded-xl shadow-lg hover:shadow-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 rounded-full bg-purple-200 flex items-center justify-center">
+                  <Building className="w-8 h-8 text-purple-600" />
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-center text-purple-700 mb-4">شحن إنترنت أرضي WE</h3>
+              <p className="text-gray-600 text-center mb-4">
+                اختر باقة الإنترنت أو استعلم عن فاتورتك.
+              </p>
+              <Input
+                type="tel"
+                placeholder="أدخل الرقم الأرضي"
+                value={weLandlineNumber}
+                onChange={(e) => setWeLandlineNumber(e.target.value)}
+                className="bg-gray-100 border-purple-300 text-gray-900 rounded-xl mb-4"
+              />
+              
+              <h4 className="text-lg font-semibold text-purple-600 mb-2">شحن باقات</h4>
+              <Select onValueChange={(val) => setSelectedWePackage(weInternetPackages.find(p => p.size === val))} value={selectedWePackage?.size}>
+                <SelectTrigger className="bg-gray-100 border-purple-300 text-gray-900 rounded-xl mb-4">
+                  <SelectValue placeholder="اختر الباقة" />
+                </SelectTrigger>
+                <SelectContent className="bg-white text-gray-900 border-purple-300 rounded-xl">
+                  <SelectGroup>
+                    <SelectLabel>الباقات (شاملة الضريبة)</SelectLabel>
+                    {weInternetPackages.map(pkg => (
+                      <SelectItem key={pkg.size} value={pkg.size}>
+                        {pkg.size} - {pkg.price} ج.م
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleSendWeInternetPackage}
+                disabled={!selectedWePackage || !weLandlineNumber}
+                className="w-full btn-gradient text-white rounded-xl mb-4"
+              >
+                شحن الباقة
+              </Button>
+              
+              <h4 className="text-lg font-semibold text-purple-600 mb-2 mt-4">استعلام عن الفاتورة</h4>
+              <Button
+                onClick={handleSendWeInternetBillInquiry}
+                disabled={!weLandlineNumber}
+                className="w-full btn-gradient text-white rounded-xl"
+              >
+                استعلام عن فاتورة النت
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* --- New Services Section: Referrals and Telegram Interactions --- */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          {/* Service Card: Referrals */}
+          <Card className="service-card bg-purple-50 border-2 border-purple-200 rounded-xl shadow-lg hover:shadow-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 rounded-full bg-purple-200 flex items-center justify-center">
+                  <User className="w-8 h-8 text-purple-600" />
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-center text-purple-700 mb-4">خدمة تزويد الإحالات</h3>
+              <p className="text-gray-600 text-center mb-4">
+                كل {referralRatePerDollar} إحالات = 1$.
+              </p>
+              <Input
+                type="number"
+                min="0"
+                placeholder="أدخل عدد الإحالات"
+                value={referralCount}
+                onChange={(e) => setReferralCount(e.target.value)}
+                className="bg-gray-100 border-purple-300 text-gray-900 rounded-xl mb-4"
+              />
+              <div className="flex justify-between items-center text-lg font-semibold text-purple-700 mb-4">
+                <span>السعر الإجمالي:</span>
+                <span className="text-gradient font-extrabold">{calculatedReferralPrice.toFixed(2)} ج.م</span>
+              </div>
+              <Button
+                onClick={handleSendReferralsRequest}
+                disabled={!referralCount}
+                className="w-full btn-gradient text-white rounded-xl"
+              >
+                إرسال طلب الإحالات
+              </Button>
+            </CardContent>
+          </Card>
+          
+          {/* Service Card: Telegram Interactions */}
+          <Card className="service-card bg-purple-50 border-2 border-purple-200 rounded-xl shadow-lg hover:shadow-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 rounded-full bg-purple-200 flex items-center justify-center">
+                  <MessageCircle className="w-8 h-8 text-purple-600" />
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-center text-purple-700 mb-4">تفاعلات التيليجرام</h3>
+              <p className="text-gray-600 text-center mb-4">
+                اختر نوع الأعضاء وأدخل رابط الجروب والكمية.
+              </p>
+              <RadioGroup onValueChange={setSelectedTelegramType} value={selectedTelegramType} className="flex justify-center mb-4">
+                <div className="flex bg-gray-100 p-1 rounded-full border border-purple-300">
+                  <Label
+                    htmlFor="arabic-members"
+                    className={`cursor-pointer px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedTelegramType === 'arabic' ? 'bg-purple-600 text-white font-bold' : ''}`}
+                  >
+                    أعضاء عرب
+                  </Label>
+                  <RadioGroupItem value="arabic" id="arabic-members" className="peer sr-only" />
+                  
+                  <Label
+                    htmlFor="foreign-members"
+                    className={`cursor-pointer px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedTelegramType === 'foreign' ? 'bg-purple-600 text-white font-bold' : ''}`}
+                  >
+                    أعضاء أجانب
+                  </Label>
+                  <RadioGroupItem value="foreign" id="foreign-members" className="peer sr-only" />
+                </div>
+              </RadioGroup>
+              <Input
+                type="url"
+                placeholder="أدخل رابط الجروب"
+                value={telegramGroupLink}
+                onChange={(e) => setTelegramGroupLink(e.target.value)}
+                className="bg-gray-100 border-purple-300 text-gray-900 rounded-xl mb-4"
+              />
+              <Input
+                type="number"
+                min="2"
+                max="50"
+                placeholder="أدخل الكمية (2-50)"
+                value={telegramMemberCount}
+                onChange={(e) => setTelegramMemberCount(e.target.value)}
+                className="bg-gray-100 border-purple-300 text-gray-900 rounded-xl mb-4"
+              />
+              <div className="flex justify-between items-center text-lg font-semibold text-purple-700 mb-4">
+                <span>السعر الإجمالي:</span>
+                <span className="text-gradient font-extrabold">{calculatedTelegramPrice.toFixed(2)} ج.م</span>
+              </div>
+              <Button
+                onClick={handleSendTelegramInteraction}
+                disabled={!selectedTelegramType || !telegramMemberCount || !telegramGroupLink}
+                className="w-full btn-gradient text-white rounded-xl"
+              >
+                إرسال طلب التفاعلات
               </Button>
             </CardContent>
           </Card>
@@ -545,10 +855,10 @@ const App = () => {
           <p className="mt-2 text-xs text-gray-500">
             تم البرمجة والتطوير بواسطة{" "}
             <a
-              href="https://wa.me/201091375804"
+              href="https://github.com/Habashi111/ABO-MORSY-STORE"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-green-600 hover:underline"
+              className="text-purple-800 font-bold hover:underline"
             >
               Habashi
             </a>
