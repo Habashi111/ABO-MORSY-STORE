@@ -855,8 +855,10 @@ const App = () => {
           <p className="mt-2 text-xs text-gray-500">
             تم البرمجة والتطوير بواسطة{" "}
             <a
-              href="https://github.com/Habashi111/ABO-MORSY-STORE"
-              target="_blank"
+               href="https://wa.me/201091375804" 
+               target="_blank"
+
+              
               rel="noopener noreferrer"
               className="text-purple-800 font-bold hover:underline"
             >
