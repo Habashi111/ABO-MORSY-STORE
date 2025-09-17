@@ -865,7 +865,7 @@ const App = () => {
               Habashi
             </a>
           </p>
-          <p>hi</p>
+         
         </div>
       </footer>
     </div>
